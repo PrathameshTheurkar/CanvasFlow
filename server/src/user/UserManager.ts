@@ -37,6 +37,7 @@ export class UserManager {
             name,
             conn: socket
         })
+        // console.log(`users: `, canvas?.users);
 
         socket.on('close', (reasonCode, description) => {
             console.log((new Date()) + ' Peer ' + socket.remoteAddress + ' disconnected.');
@@ -86,7 +87,10 @@ export class UserManager {
 
         const canvas = this.canvas.get(canvasId);
 
-        canvas?.users.forEach(({conn}) => {
+        canvas?.users.forEach(({conn, id}) => {
+            if(id == userId) {
+                return;
+            }
             conn.sendUTF(JSON.stringify(message));
         })
     }
