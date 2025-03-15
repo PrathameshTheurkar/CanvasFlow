@@ -10,10 +10,13 @@ ctx.fillText("Awesome!", 50, 100);
 
 // Draw line under text
 var text = ctx.measureText("Awesome");
-ctx.strokeStyle = "rgba(0,0,0,0.5)";
+ctx.strokeStyle = "white";
 ctx.beginPath();
+ctx.lineWidth = 5;
+ctx.lineCap = "round";
+ctx.moveTo(50, 102);
 ctx.lineTo(50, 102);
-ctx.lineTo(50 + text.width, 102);
+// ctx.lineTo(50 + text.width, 102);
 ctx.stroke();
 
 // Draw cat with lime helmet

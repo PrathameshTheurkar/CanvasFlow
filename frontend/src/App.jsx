@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useEffect } from "react";
 
 const styles = {
   canvas: {
@@ -10,6 +11,13 @@ function App() {
   const [isDrawing, setIsDrawing] = useState(false);
 
   const canvasRef = useRef();
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8080", "echo-protocol");
+    ws.onopen = () => {
+      console.log("Connected to server");
+    };
+  }, []);
 
   return (
     <canvas

@@ -26,7 +26,8 @@ export const DrawMessage = z.object({
     canvasId: z.string(),
     userId: z.string(),
     x: z.number(),
-    y: z.number()
+    y: z.number(),
+    name: z.string()
 })
 
 export type DrawMessageType = z.infer<typeof DrawMessage>;

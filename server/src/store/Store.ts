@@ -1,7 +1,7 @@
 
 export interface Cursor {
     id: string;
-    userId: number;
+    userId: string;
     name: string;
     x: number;
     y: number;
@@ -16,7 +16,11 @@ export abstract class Store {
 
     }
 
-    draw(x: number, y: number) {
+    addCursor(canvasId: string, userId: string, x: number, y: number, name: string) {
 
+    }
+
+    getCursors(canvasId: string) {
+        
     }
 }

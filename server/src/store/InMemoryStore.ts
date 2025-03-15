@@ -19,7 +19,29 @@ export class InMemoryStore implements Store {
         })
     }
 
-    draw(x: number, y: number) {
-        
+    addCursor(canvasId: string, userId: string, x: number, y: number, name: string) {
+        if(!this.canvas.get(canvasId)) {
+            this.initCanvas(canvasId);
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.cursor.push({
+            id: `${userId}-${Date.now()}`,
+            userId,
+            name,
+            x,
+            y
+        })
+    }
+
+    getCursors(canvasId: string) {
+        const canvas = this.canvas.get(canvasId);
+
+        if(!canvas) {
+            return [];
+        }
+
+        return canvas.cursor;
     }
 }

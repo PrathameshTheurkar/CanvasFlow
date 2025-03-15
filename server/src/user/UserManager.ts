@@ -1,4 +1,5 @@
 import { connection } from "websocket";
+import { OutgoingMessage } from "../messages/outgoingMessages";
 
 interface User {
     id: string;
@@ -36,6 +37,12 @@ export class UserManager {
             name,
             conn: socket
         })
+
+        socket.on('close', (reasonCode, description) => {
+            console.log((new Date()) + ' Peer ' + socket.remoteAddress + ' disconnected.');
+            console.log(`UserId: ${userId} disconnected`);
+            this.removeUser(canvasId, userId);
+        });
     }
 
     removeUser(canvasId: string, userId: string) {
@@ -55,5 +62,33 @@ export class UserManager {
         }
     }
 
+    getUser(canvasId: string, userId: string) {
+        if(!this.canvas.get(canvasId)) {
+            return;
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        return canvas?.users.find(({id}) => id == userId);
+    }
+
+    broadcast(canvasId: string, userId: string, message: OutgoingMessage) {
+        const user = this.getUser(canvasId, userId);
+
+        if(!user) {
+            console.log('User not found');
+            return;
+        }
+
+        if(!this.canvas.get(canvasId)) {
+            return;
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.users.forEach(({conn}) => {
+            conn.sendUTF(JSON.stringify(message));
+        })
+    }
 
 }
