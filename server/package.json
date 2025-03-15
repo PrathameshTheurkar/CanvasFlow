@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "websocket": "^1.0.35",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/websocket": "^1.0.10",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2"
+  }
+}
