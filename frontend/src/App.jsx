@@ -1,5 +1,4 @@
-import React, { useRef, useState } from "react";
-import { useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 
 const styles = {
   canvas: {
@@ -11,42 +10,21 @@ const randomUserId = Math.floor(Math.random() * 1000);
 
 function App() {
   const [isDrawing, setIsDrawing] = useState(false);
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
   const [socket, setSocket] = useState(null);
-  // const [context, setContext] = useState();
-  const [userId, setUserId] = useState(randomUserId.toString());
+  const [userId] = useState(randomUserId.toString());
 
   const canvasRef = useRef();
-
-  const sendDrawMessage = () => {
-    if (!socket) {
-      return;
-    }
-
-    socket.send(
-      JSON.stringify({
-        type: "DRAW",
-        payload: {
-          canvasId: "1",
-          userId,
-          x,
-          y,
-          name: "Prathamesh",
-        },
-      })
-    );
-  };
+  const prevXRef = useRef(null);
+  const prevYRef = useRef(null);
 
   useEffect(() => {
     const context = canvasRef.current.getContext("2d");
 
     const ws = new WebSocket("ws://localhost:8080", "echo-protocol");
     setSocket(ws);
+
     ws.onopen = () => {
       console.log("Connected to server");
-      // const userId = randomUserId.toString();
-      setUserId(randomUserId.toString());
       ws.send(
         JSON.stringify({
           type: "JOIN",
@@ -60,31 +38,30 @@ function App() {
     };
 
     ws.onmessage = (message) => {
-      const { payload, type } = JSON.parse(message.data);
-      // console.log("Payload: ", payload);
-      // console.log("Type: ", type);
-
-      if (type == "DRAW") {
-        console.log("context", context);
-        if (context) {
-          context.beginPath();
-          context.lineWidth = 5;
-          context.lineCap = "round";
-          context.strokeStyle = "#ACD3ED";
-          context.moveTo(payload.x, payload.y);
-          context.lineTo(payload.x, payload.y);
-          context.stroke();
+      try {
+        const { payload, type } = JSON.parse(message.data);
+        if (type === "DRAW") {
+          if (context) {
+            context.beginPath();
+            context.lineWidth = 5;
+            context.lineCap = "round";
+            context.strokeStyle = "#ACD3ED";
+            context.moveTo(payload.prevX, payload.prevY);
+            context.lineTo(payload.x, payload.y);
+            context.stroke();
+          }
         }
+      } catch (error) {
+        console.error("Error parsing WebSocket message:", error);
       }
     };
 
     ws.onerror = (error) => {
-      alert("Error");
-      console.log("Error: ", error);
+      console.error("WebSocket Error: ", error);
     };
 
     ws.onclose = () => {
-      alert("Disconnected");
+      console.log("Disconnected from server");
     };
 
     return () => {
@@ -93,13 +70,22 @@ function App() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (canvasRef.current) {
-  //     const context = canvasRef.current.getContext("2d");
-  //     console.log("context useEffect: ", context);
-  //     setContext(context);
-  //   }
-  // }, []);
+  const sendDrawMessage = (prevX, prevY, x, y) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(
+      JSON.stringify({
+        type: "DRAW",
+        payload: {
+          canvasId: "1",
+          userId,
+          prevX,
+          prevY,
+          x,
+          y,
+        },
+      })
+    );
+  };
 
   return (
     <canvas
@@ -110,33 +96,39 @@ function App() {
       className="bg-red-300"
       onMouseDown={(e) => {
         setIsDrawing(true);
-        const context = e.currentTarget.getContext("2d");
-        if (context) {
-          context.beginPath();
-          context.lineWidth = 5;
-          context.lineCap = "round";
-          context.strokeStyle = "#ACD3ED";
-          context.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-          setX(e.nativeEvent.offsetX);
-          setY(e.nativeEvent.offsetY);
-          sendDrawMessage();
-        }
+        prevXRef.current = e.nativeEvent.offsetX;
+        prevYRef.current = e.nativeEvent.offsetY;
       }}
       onMouseMove={(e) => {
         if (isDrawing) {
-          const context = e.currentTarget.getContext("2d");
-          // setContext(e.currentTarget.getContext("2d"));
-          if (context) {
-            context.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+          const context = canvasRef.current.getContext("2d");
+          const x = e.nativeEvent.offsetX;
+          const y = e.nativeEvent.offsetY;
+
+          if (
+            context &&
+            prevXRef.current !== null &&
+            prevYRef.current !== null
+          ) {
+            context.beginPath();
+            context.lineWidth = 5;
+            context.lineCap = "round";
+            context.strokeStyle = "#ACD3ED";
+            context.moveTo(prevXRef.current, prevYRef.current);
+            context.lineTo(x, y);
             context.stroke();
-            setX(e.nativeEvent.offsetX);
-            setY(e.nativeEvent.offsetY);
-            sendDrawMessage();
+
+            sendDrawMessage(prevXRef.current, prevYRef.current, x, y);
+
+            prevXRef.current = x;
+            prevYRef.current = y;
           }
         }
       }}
       onMouseUp={() => {
         setIsDrawing(false);
+        prevXRef.current = null;
+        prevYRef.current = null;
       }}
     />
   );

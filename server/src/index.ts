@@ -64,15 +64,17 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
         userManager.broadcast(canvasId, userId, outgoingMessage);
         
     } else if(message.type == SupportedMessage.DRAW) {
-        const {canvasId, userId, x, y, name} = message.payload;
+        const {canvasId, userId, prevX, prevY, x, y, name} = message.payload;
 
-        store.addCursor(canvasId, userId, x, y, name);
+        store.addCursor(canvasId, userId, prevX, prevY, x, y, name);
 
         const outgoingMessage: OutgoingMessage = {
             type: OutgoingSupportedMessage.DRAW,
             payload: {
                 canvasId,
                 userId, 
+                prevX,
+                prevY,
                 x,
                 y,
                 name

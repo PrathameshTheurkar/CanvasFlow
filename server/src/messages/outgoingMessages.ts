@@ -7,6 +7,8 @@ type MessagePayload = {
     canvasId: string;
     userId: string;
     name: string;
+    prevX: number;
+    prevY: number;
     x: number;
     y: number;
 }

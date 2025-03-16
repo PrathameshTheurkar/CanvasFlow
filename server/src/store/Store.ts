@@ -3,6 +3,8 @@ export interface Cursor {
     id: string;
     userId: string;
     name: string;
+    prevX: number;
+    prevY: number;
     x: number;
     y: number;
 }
@@ -16,7 +18,7 @@ export abstract class Store {
 
     }
 
-    addCursor(canvasId: string, userId: string, x: number, y: number, name: string) {
+    addCursor(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
 
     }
 

@@ -19,7 +19,7 @@ export class InMemoryStore implements Store {
         })
     }
 
-    addCursor(canvasId: string, userId: string, x: number, y: number, name: string) {
+    addCursor(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
         if(!this.canvas.get(canvasId)) {
             this.initCanvas(canvasId);
         }
@@ -30,6 +30,8 @@ export class InMemoryStore implements Store {
             id: `${userId}-${Date.now()}`,
             userId,
             name,
+            prevX,
+            prevY,
             x,
             y
         })

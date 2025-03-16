@@ -25,6 +25,8 @@ export type JoinMessageType = z.infer<typeof JoinMessage>;
 export const DrawMessage = z.object({
     canvasId: z.string(),
     userId: z.string(),
+    prevX: z.number(),
+    prevY: z.number(),
     x: z.number(),
     y: z.number(),
     name: z.string()
