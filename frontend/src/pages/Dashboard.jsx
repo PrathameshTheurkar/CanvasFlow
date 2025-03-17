@@ -1,26 +1,75 @@
 import React, { useRef, useState, useEffect, useContext } from "react";
 import { Context } from "../context/ContextProvider";
-
-const styles = {
-  canvas: {
-    cursor: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'  width='40' height='48' viewport='0 0 100 100' style='fill:black;font-size:24px;'><text y='50%'>✍️</text></svg>") 5 25,auto`,
-  },
-  eraser: {
-    cursor: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'  width='40' height='48' viewport='0 0 100 100' style='fill:black;font-size:24px;'><text y='50%'>🧽</text></svg>") 5 25,auto`,
-  },
-};
-
-const randomUserId = Math.floor(Math.random() * 1000);
+import {
+  BsCursor,
+  BsHandIndex,
+  BsSquare,
+  BsDiamond,
+  BsCircle,
+  BsArrowRight,
+  BsSlash,
+  BsPencil,
+  BsTypeH1,
+  BsImage,
+  BsEraser,
+  BsArrowCounterclockwise,
+  BsList,
+  BsPerson,
+  BsShare,
+  BsChevronDown,
+  BsPalette,
+  BsGrid3X3,
+} from "react-icons/bs";
 
 const Dashboard = () => {
-  const [isDrawing, setIsDrawing] = useState(true);
+  const [currentTool, setCurrentTool] = useState("pencil");
   const [socket, setSocket] = useState(null);
-  const [userId] = useState(randomUserId.toString());
+  const [userId] = useState(Math.floor(Math.random() * 1000).toString());
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { username, canvasId } = useContext(Context);
 
   const canvasRef = useRef();
   const prevXRef = useRef(null);
   const prevYRef = useRef(null);
+
+  const tools = [
+    { id: "select", icon: BsCursor, tooltip: "Select" },
+    { id: "hand", icon: BsHandIndex, tooltip: "Hand" },
+    { id: "rectangle", icon: BsSquare, tooltip: "Rectangle" },
+    { id: "diamond", icon: BsDiamond, tooltip: "Diamond" },
+    { id: "circle", icon: BsCircle, tooltip: "Circle" },
+    { id: "arrow", icon: BsArrowRight, tooltip: "Arrow" },
+    { id: "line", icon: BsSlash, tooltip: "Line" },
+    { id: "pencil", icon: BsPencil, tooltip: "Pencil" },
+    { id: "text", icon: BsTypeH1, tooltip: "Text" },
+    { id: "image", icon: BsImage, tooltip: "Image" },
+    { id: "eraser", icon: BsEraser, tooltip: "Eraser" },
+  ];
+
+  const getCursorCSS = (tool) => {
+    switch (tool) {
+      case "pencil":
+        return "cursor-crosshair";
+      case "eraser":
+        return "cursor-crosshair";
+      case "select":
+        return "cursor-default";
+      case "hand":
+        return "cursor-grab";
+      case "rectangle":
+      case "diamond":
+      case "circle":
+      case "arrow":
+      case "line":
+        return "cursor-crosshair";
+      case "text":
+        return "cursor-text";
+      case "image":
+        return "cursor-pointer";
+      default:
+        return "cursor-default";
+    }
+  };
 
   useEffect(() => {
     const context = canvasRef.current.getContext("2d");
@@ -48,16 +97,15 @@ const Dashboard = () => {
         if (type === "DRAW") {
           if (context) {
             context.beginPath();
-            context.lineWidth = 5;
+            context.lineWidth = 2;
             context.lineCap = "round";
             context.strokeStyle = "white";
             context.moveTo(payload.prevX, payload.prevY);
             context.lineTo(payload.x, payload.y);
             context.stroke();
           }
-        } else if (type == "ERASE") {
+        } else if (type === "ERASE") {
           if (context) {
-            console.log(type, payload);
             context.clearRect(payload.x - 5, payload.y - 5, 10, 10);
           }
         }
@@ -78,7 +126,7 @@ const Dashboard = () => {
       ws.close();
       setSocket(null);
     };
-  }, []);
+  }, [username, canvasId, userId]);
 
   const sendDrawMessage = (prevX, prevY, x, y) => {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
@@ -113,62 +161,135 @@ const Dashboard = () => {
     );
   };
 
-  const eraseButton = () => {
-    setIsDrawing((prevState) => !prevState);
+  const handleToolChange = (toolId) => {
+    setCurrentTool(toolId);
+  };
+
+  const toggleProfileMenu = () => {
+    setShowProfileMenu(!showProfileMenu);
+  };
+
+  const handleCanvasAction = (e) => {
+    const context = canvasRef.current.getContext("2d");
+    const x = e.nativeEvent.offsetX;
+    const y = e.nativeEvent.offsetY;
+
+    if (context && prevXRef.current !== null && prevYRef.current !== null) {
+      if (currentTool === "pencil") {
+        context.beginPath();
+        context.lineWidth = 2;
+        context.lineCap = "round";
+        context.strokeStyle = "#ACD3ED";
+        context.moveTo(prevXRef.current, prevYRef.current);
+        context.lineTo(x, y);
+        context.stroke();
+
+        sendDrawMessage(prevXRef.current, prevYRef.current, x, y);
+      } else if (currentTool === "eraser") {
+        context.clearRect(x - 5, y - 5, 10, 10);
+        sendEraseMessage(x, y);
+      }
+
+      prevXRef.current = x;
+      prevYRef.current = y;
+    }
   };
 
   return (
-    <>
-      <button onClick={eraseButton}>Erase</button>
+    <div className="relative h-screen w-screen overflow-hidden bg-[#121212] text-gray-300">
+      <div className="fixed left-3 top-3 z-10">
+        <button className="p-1.5 rounded-md bg-[#1e1e1e] hover:bg-[#2a2a2a] transition-colors text-gray-300">
+          <BsList size={18} />
+        </button>
+      </div>
+
+      <div className="fixed top-3 left-1/2 transform -translate-x-1/2 bg-[#1e1e1e] rounded-lg shadow-lg z-10">
+        <div className="flex items-center h-10 px-1">
+          {tools.map((tool) => {
+            const IconComponent = tool.icon;
+            return (
+              <button
+                key={tool.id}
+                className={`p-1.5 m-0.5 rounded-md transition-colors relative group ${
+                  currentTool === tool.id
+                    ? "bg-[#2a2a2a] text-white"
+                    : "hover:bg-[#2a2a2a] text-gray-400 hover:text-white"
+                }`}
+                onClick={() => handleToolChange(tool.id)}
+                aria-label={tool.tooltip}
+              >
+                <IconComponent size={16} />
+                <span className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-xs py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {tool.tooltip}
+                </span>
+              </button>
+            );
+          })}
+          <div className="h-5 mx-1 w-px bg-[#2a2a2a]"></div>
+          <button
+            className="p-1.5 m-0.5 rounded-md hover:bg-[#2a2a2a] text-gray-400 hover:text-white transition-colors relative group"
+            aria-label="Undo"
+          >
+            <BsArrowCounterclockwise size={16} />
+            <span className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-xs py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+              Undo
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="fixed right-3 top-3 flex items-center space-x-2 z-10">
+        <button className="p-1.5 rounded-md bg-blue-600 hover:bg-blue-700 transition-colors flex items-center">
+          <BsShare className="mr-1" size={14} />
+          <span className="text-xs">Share</span>
+        </button>
+
+        <div className="relative">
+          <button
+            className="flex items-center p-1.5 rounded-md bg-[#1e1e1e] hover:bg-[#2a2a2a] transition-colors"
+            onClick={toggleProfileMenu}
+          >
+            <BsPerson size={16} />
+          </button>
+
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-[#1e1e1e] rounded-md shadow-lg py-1 z-20">
+              <div className="px-3 py-2 text-xs border-b border-[#2a2a2a]">
+                Signed in as{" "}
+                <span className="font-medium">{username || "User"}</span>
+              </div>
+              <div className="px-3 py-2 text-xs">
+                Canvas ID:{" "}
+                <span className="font-medium">{canvasId || "Default"}</span>
+              </div>
+              <button className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-[#2a2a2a]">
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <canvas
-        style={isDrawing ? styles.canvas : styles.eraser}
+        className={`bg-[#121212] ${getCursorCSS(currentTool)}`}
         ref={canvasRef}
         height={window.innerHeight}
         width={window.innerWidth}
-        className="bg-red-300"
         onMouseDown={(e) => {
-          //   setIsDrawing(true);
           prevXRef.current = e.nativeEvent.offsetX;
           prevYRef.current = e.nativeEvent.offsetY;
         }}
-        onMouseMove={(e) => {
-          //   if (isDrawing) {
-          const context = canvasRef.current.getContext("2d");
-          const x = e.nativeEvent.offsetX;
-          const y = e.nativeEvent.offsetY;
-
-          if (
-            context &&
-            prevXRef.current !== null &&
-            prevYRef.current !== null
-          ) {
-            if (isDrawing) {
-              context.beginPath();
-              context.lineWidth = 5;
-              context.lineCap = "round";
-              context.strokeStyle = "#ACD3ED";
-              context.moveTo(prevXRef.current, prevYRef.current);
-              context.lineTo(x, y);
-              context.stroke();
-
-              sendDrawMessage(prevXRef.current, prevYRef.current, x, y);
-            } else {
-              context.clearRect(x - 5, y - 5, 10, 10);
-              sendEraseMessage(x, y);
-            }
-
-            prevXRef.current = x;
-            prevYRef.current = y;
-          }
-          //   }
-        }}
+        onMouseMove={handleCanvasAction}
         onMouseUp={() => {
-          //   setIsDrawing(false);
+          prevXRef.current = null;
+          prevYRef.current = null;
+        }}
+        onMouseLeave={() => {
           prevXRef.current = null;
           prevYRef.current = null;
         }}
       />
-    </>
+    </div>
   );
 };
 
