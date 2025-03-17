@@ -10,7 +10,7 @@ const styles = {
 const randomUserId = Math.floor(Math.random() * 1000);
 
 const Dashboard = () => {
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(true);
   const [socket, setSocket] = useState(null);
   const [userId] = useState(randomUserId.toString());
   const { username, canvasId } = useContext(Context);
@@ -52,6 +52,11 @@ const Dashboard = () => {
             context.lineTo(payload.x, payload.y);
             context.stroke();
           }
+        } else if (type == "ERASE") {
+          if (context) {
+            console.log(type, payload);
+            context.clearRect(payload.x - 5, payload.y - 5, 10, 10);
+          }
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -89,20 +94,42 @@ const Dashboard = () => {
     );
   };
 
+  const sendEraseMessage = (x, y) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "ERASE",
+        payload: {
+          canvasId,
+          userId,
+          x,
+          y,
+        },
+      })
+    );
+  };
+
+  const eraseButton = () => {
+    setIsDrawing((prevState) => !prevState);
+  };
+
   return (
-    <canvas
-      style={styles.canvas}
-      ref={canvasRef}
-      height={window.innerHeight}
-      width={window.innerWidth}
-      className="bg-red-300"
-      onMouseDown={(e) => {
-        setIsDrawing(true);
-        prevXRef.current = e.nativeEvent.offsetX;
-        prevYRef.current = e.nativeEvent.offsetY;
-      }}
-      onMouseMove={(e) => {
-        if (isDrawing) {
+    <>
+      <button onClick={eraseButton}>Erase</button>
+      <canvas
+        style={styles.canvas}
+        ref={canvasRef}
+        height={window.innerHeight}
+        width={window.innerWidth}
+        className="bg-red-300"
+        onMouseDown={(e) => {
+          //   setIsDrawing(true);
+          prevXRef.current = e.nativeEvent.offsetX;
+          prevYRef.current = e.nativeEvent.offsetY;
+        }}
+        onMouseMove={(e) => {
+          //   if (isDrawing) {
           const context = canvasRef.current.getContext("2d");
           const x = e.nativeEvent.offsetX;
           const y = e.nativeEvent.offsetY;
@@ -112,27 +139,33 @@ const Dashboard = () => {
             prevXRef.current !== null &&
             prevYRef.current !== null
           ) {
-            context.beginPath();
-            context.lineWidth = 5;
-            context.lineCap = "round";
-            context.strokeStyle = "#ACD3ED";
-            context.moveTo(prevXRef.current, prevYRef.current);
-            context.lineTo(x, y);
-            context.stroke();
+            if (isDrawing) {
+              context.beginPath();
+              context.lineWidth = 5;
+              context.lineCap = "round";
+              context.strokeStyle = "#ACD3ED";
+              context.moveTo(prevXRef.current, prevYRef.current);
+              context.lineTo(x, y);
+              context.stroke();
 
-            sendDrawMessage(prevXRef.current, prevYRef.current, x, y);
+              sendDrawMessage(prevXRef.current, prevYRef.current, x, y);
+            } else {
+              context.clearRect(x - 5, y - 5, 10, 10);
+              sendEraseMessage(x, y);
+            }
 
             prevXRef.current = x;
             prevYRef.current = y;
           }
-        }
-      }}
-      onMouseUp={() => {
-        setIsDrawing(false);
-        prevXRef.current = null;
-        prevYRef.current = null;
-      }}
-    />
+          //   }
+        }}
+        onMouseUp={() => {
+          //   setIsDrawing(false);
+          prevXRef.current = null;
+          prevYRef.current = null;
+        }}
+      />
+    </>
   );
 };
 

@@ -82,5 +82,21 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
         }
 
         userManager.broadcast(canvasId, userId, outgoingMessage);
+    } else if(message.type == SupportedMessage.ERASE) {
+        const {canvasId, userId, x, y} = message.payload;
+
+        store.removeCursor(canvasId, userId, x, y);
+
+        const outgoingMessage: OutgoingMessage = {
+            type: OutgoingSupportedMessage.ERASE,
+            payload: {
+                canvasId,
+                userId,
+                x, 
+                y
+            }
+        }
+
+        userManager.broadcast(canvasId, userId, outgoingMessage);
     }
 }

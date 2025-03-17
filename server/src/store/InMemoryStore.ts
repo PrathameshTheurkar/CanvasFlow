@@ -46,4 +46,20 @@ export class InMemoryStore implements Store {
 
         return canvas.cursor;
     }
+
+    removeCursor(canvasId: string, userId: string, x: number, y: number) {
+        if(!this.canvas.get(canvasId)) {
+            return;
+        }
+
+        const cursors = this.canvas.get(canvasId)?.cursor;
+
+        const filteredCursors = cursors?.filter((cursor) => (!(cursor.x == x) ||  !(cursor.y == y)));
+
+        this.canvas.set(canvasId, {
+            canvasId,
+            cursor: filteredCursors || []
+        })
+    }
+
 }

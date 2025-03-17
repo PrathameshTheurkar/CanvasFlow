@@ -20,7 +20,6 @@ const JoinCanvas = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
     setUsername(formData.username);
     setcanvasId(formData.canvasId);
     navigate("/dashboard");
@@ -45,7 +44,7 @@ const JoinCanvas = () => {
                 htmlFor="canvasId"
                 className="block text-sm font-medium text-gray-700"
               >
-                Room ID
+                Canvas ID
               </label>
               <input
                 id="canvasId"
