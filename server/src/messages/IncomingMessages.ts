@@ -3,7 +3,8 @@ import {z} from 'zod';
 export enum SupportedMessage  {
     JOIN = 'JOIN',
     DRAW = 'DRAW',
-    ERASE = 'ERASE'
+    ERASE = 'ERASE',
+    LINE = 'LINE'
 }
 
 export type IncomingMessages = {
@@ -15,6 +16,9 @@ export type IncomingMessages = {
 } | {
     type: SupportedMessage.ERASE,
     payload: EraseMessageType
+} | {
+    type: SupportedMessage.LINE,
+    payload: LineMessageType
 }
 
 export const JoinMessage = z.object({
@@ -46,3 +50,15 @@ export const EraseMessage = z.object({
 })
 
 export type EraseMessageType = z.infer<typeof EraseMessage>;
+
+export const LineMessage = z.object({
+    canvasId: z.string(),
+    userId: z.string(),
+    startX: z.number(),
+    startY: z.number(),
+    endX: z.number(),
+    endY: z.number(),
+    name: z.string()
+})
+
+export type LineMessageType = z.infer<typeof LineMessage>;

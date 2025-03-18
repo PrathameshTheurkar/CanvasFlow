@@ -1,7 +1,8 @@
 export enum SupportedMessage {
     JOIN = 'JOIN',
     DRAW = 'DRAW',
-    ERASE = 'ERASE'
+    ERASE = 'ERASE',
+    LINE = 'LINE'
 }
 
 type MessagePayload = {
@@ -21,6 +22,16 @@ type UpdateMessageUpload = {
     y: number;
 }
 
+type LineMessagePayload = {
+    canvasId: string,
+    userId: string,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    name: string
+}
+
 export type OutgoingMessage = {
     type: SupportedMessage.DRAW,
     payload: MessagePayload
@@ -30,5 +41,8 @@ export type OutgoingMessage = {
 } | {
     type: SupportedMessage.ERASE,
     payload: UpdateMessageUpload
+} | {
+    type: SupportedMessage.LINE,
+    payload: LineMessagePayload    
 }
 

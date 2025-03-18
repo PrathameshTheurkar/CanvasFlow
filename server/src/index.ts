@@ -98,5 +98,24 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
         }
 
         userManager.broadcast(canvasId, userId, outgoingMessage);
+    } else if(message.type == SupportedMessage.LINE) {
+        const {canvasId, userId, startX, startY, endX, endY, name} = message.payload;
+
+        store.addCursor(canvasId, userId, startX, startY, endX, endY, name);
+
+        const outgoingMessage: OutgoingMessage = {
+            type: OutgoingSupportedMessage.LINE,
+            payload: {
+                canvasId,
+                userId,
+                startX,
+                startY,
+                endX,
+                endY,
+                name
+            }
+        }
+
+        userManager.broadcast(canvasId, userId, outgoingMessage);
     }
 }

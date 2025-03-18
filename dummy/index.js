@@ -9,16 +9,17 @@ ctx.font = "30px Impact";
 ctx.fillText("Awesome!", 50, 100);
 
 // Draw line under text
-const lineWidth = 5;
+const lineWidth = 2;
 var text = ctx.measureText("Awesome");
 ctx.strokeStyle = "white";
 ctx.beginPath();
 ctx.lineWidth = lineWidth;
 ctx.lineCap = "round";
-ctx.moveTo(50, 102);
+// ctx.moveTo(50, 102);
 ctx.lineTo(50, 102);
-// ctx.lineTo(50 + text.width, 102);
+ctx.lineTo(50 + text.width, 102);
 ctx.stroke();
+ctx.clearRect(48, 100, 50 + text.width, 3);
 // ctx.clearRect(50, 102, 1, 1);
 // ctx.clearRect(49, 102, 1, 1);
 // ctx.clearRect(49, 101, 1, 1);

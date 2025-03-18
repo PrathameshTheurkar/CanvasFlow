@@ -16,9 +16,6 @@ import {
   BsList,
   BsPerson,
   BsShare,
-  BsChevronDown,
-  BsPalette,
-  BsGrid3X3,
 } from "react-icons/bs";
 
 const Dashboard = () => {
@@ -27,6 +24,9 @@ const Dashboard = () => {
   const [userId] = useState(Math.floor(Math.random() * 1000).toString());
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { username, canvasId } = useContext(Context);
+  const [startPoint, setStartPoint] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [lastCanvas, setLastCanvas] = useState(null);
 
   const canvasRef = useRef();
   const prevXRef = useRef(null);
@@ -108,6 +108,16 @@ const Dashboard = () => {
           if (context) {
             context.clearRect(payload.x - 5, payload.y - 5, 10, 10);
           }
+        } else if (type === "LINE") {
+          if (context) {
+            context.beginPath();
+            context.lineWidth = 2;
+            context.lineCap = "round";
+            context.strokeStyle = "white";
+            context.moveTo(payload.startX, payload.startY);
+            context.lineTo(payload.endX, payload.endY);
+            context.stroke();
+          }
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -161,12 +171,47 @@ const Dashboard = () => {
     );
   };
 
+  const sendLineMessage = (startX, startY, endX, endY) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "LINE",
+        payload: {
+          canvasId,
+          userId,
+          startX,
+          startY,
+          endX,
+          endY,
+          name: username,
+        },
+      })
+    );
+  };
+
   const handleToolChange = (toolId) => {
     setCurrentTool(toolId);
   };
 
   const toggleProfileMenu = () => {
     setShowProfileMenu(!showProfileMenu);
+  };
+
+  const saveCanvasState = () => {
+    if (canvasRef.current) {
+      setLastCanvas(
+        canvasRef.current
+          .getContext("2d")
+          .getImageData(0, 0, canvasRef.current.width, canvasRef.current.height)
+      );
+    }
+  };
+
+  const restoreCanvasState = () => {
+    if (lastCanvas && canvasRef.current) {
+      canvasRef.current.getContext("2d").putImageData(lastCanvas, 0, 0);
+    }
   };
 
   const handleCanvasAction = (e) => {
@@ -188,11 +233,60 @@ const Dashboard = () => {
       } else if (currentTool === "eraser") {
         context.clearRect(x - 5, y - 5, 10, 10);
         sendEraseMessage(x, y);
+      } else if (currentTool === "line" && isDrawing && startPoint) {
+        restoreCanvasState();
+
+        context.beginPath();
+        context.lineWidth = 2;
+        context.lineCap = "round";
+        context.strokeStyle = "#ACD3ED";
+        context.moveTo(startPoint.x, startPoint.y);
+        context.lineTo(x, y);
+        context.stroke();
       }
 
       prevXRef.current = x;
       prevYRef.current = y;
     }
+  };
+
+  const handleMouseDown = (e) => {
+    const x = e.nativeEvent.offsetX;
+    const y = e.nativeEvent.offsetY;
+
+    prevXRef.current = x;
+    prevYRef.current = y;
+
+    if (currentTool === "line") {
+      setIsDrawing(true);
+      setStartPoint({ x, y });
+      saveCanvasState();
+    }
+  };
+
+  const handleMouseUp = (e) => {
+    const x = e.nativeEvent.offsetX;
+    const y = e.nativeEvent.offsetY;
+
+    if (currentTool === "line" && isDrawing && startPoint) {
+      const context = canvasRef.current.getContext("2d");
+
+      context.beginPath();
+      context.lineWidth = 2;
+      context.lineCap = "round";
+      context.strokeStyle = "#ACD3ED";
+      context.moveTo(startPoint.x, startPoint.y);
+      context.lineTo(x, y);
+      context.stroke();
+
+      sendLineMessage(startPoint.x, startPoint.y, x, y);
+
+      setIsDrawing(false);
+      setStartPoint(null);
+    }
+
+    prevXRef.current = null;
+    prevYRef.current = null;
   };
 
   return (
@@ -275,16 +369,14 @@ const Dashboard = () => {
         ref={canvasRef}
         height={window.innerHeight}
         width={window.innerWidth}
-        onMouseDown={(e) => {
-          prevXRef.current = e.nativeEvent.offsetX;
-          prevYRef.current = e.nativeEvent.offsetY;
-        }}
+        onMouseDown={handleMouseDown}
         onMouseMove={handleCanvasAction}
-        onMouseUp={() => {
-          prevXRef.current = null;
-          prevYRef.current = null;
-        }}
+        onMouseUp={handleMouseUp}
         onMouseLeave={() => {
+          if (currentTool === "line" && isDrawing) {
+            restoreCanvasState();
+            setIsDrawing(false);
+          }
           prevXRef.current = null;
           prevYRef.current = null;
         }}
