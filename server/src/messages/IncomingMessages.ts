@@ -4,7 +4,8 @@ export enum SupportedMessage  {
     JOIN = 'JOIN',
     DRAW = 'DRAW',
     ERASE = 'ERASE',
-    LINE = 'LINE'
+    LINE = 'LINE',
+    RECTANGLE = 'RECTANGLE'
 }
 
 export type IncomingMessages = {
@@ -19,6 +20,9 @@ export type IncomingMessages = {
 } | {
     type: SupportedMessage.LINE,
     payload: LineMessageType
+} | {
+    type: SupportedMessage.RECTANGLE,
+    payload: RectangleMessageType
 }
 
 export const JoinMessage = z.object({
@@ -62,3 +66,15 @@ export const LineMessage = z.object({
 })
 
 export type LineMessageType = z.infer<typeof LineMessage>;
+
+export const RectangleMessage = z.object({
+    canvasId: z.string(),
+    userId: z.string(),
+    x: z.number(),
+    y: z.number(),
+    width: z.number(),
+    height: z.number(),
+    name: z.string()
+})
+
+export type RectangleMessageType = z.infer<typeof RectangleMessage>;

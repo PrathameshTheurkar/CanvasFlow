@@ -9,6 +9,28 @@ export interface Cursor {
     y: number;
 }
 
+export interface Line {
+    id: string;
+    canvasId: string;
+    userId: string;
+    startX: number;
+    startY: number;
+    endX: number;
+    endY: number;
+    name: string;
+}
+
+export interface Rectangle {
+    id: string;
+    canvasId: string;
+    userId: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    name: string
+}
+
 export abstract class Store {
     constructor() {
 

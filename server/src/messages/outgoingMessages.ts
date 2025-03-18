@@ -2,7 +2,8 @@ export enum SupportedMessage {
     JOIN = 'JOIN',
     DRAW = 'DRAW',
     ERASE = 'ERASE',
-    LINE = 'LINE'
+    LINE = 'LINE',
+    RECTANGLE = 'RECTANGLE'
 }
 
 type MessagePayload = {
@@ -32,6 +33,16 @@ type LineMessagePayload = {
     name: string
 }
 
+type RectangleMessagePayload = {
+    canvasId: string;
+    userId: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    name: string;
+}
+
 export type OutgoingMessage = {
     type: SupportedMessage.DRAW,
     payload: MessagePayload
@@ -44,5 +55,8 @@ export type OutgoingMessage = {
 } | {
     type: SupportedMessage.LINE,
     payload: LineMessagePayload    
+} | {
+    type: SupportedMessage.RECTANGLE,
+    payload: RectangleMessagePayload
 }
 

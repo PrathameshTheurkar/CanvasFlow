@@ -101,7 +101,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
     } else if(message.type == SupportedMessage.LINE) {
         const {canvasId, userId, startX, startY, endX, endY, name} = message.payload;
 
-        store.addCursor(canvasId, userId, startX, startY, endX, endY, name);
+        store.addLine(canvasId, userId, startX, startY, endX, endY, name);
 
         const outgoingMessage: OutgoingMessage = {
             type: OutgoingSupportedMessage.LINE,
@@ -112,6 +112,25 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
                 startY,
                 endX,
                 endY,
+                name
+            }
+        }
+
+        userManager.broadcast(canvasId, userId, outgoingMessage);
+    } else if(message.type == SupportedMessage.RECTANGLE) {
+        const {canvasId, userId, x, y, width, height, name} = message.payload;
+
+        store.addRectangle(canvasId, userId, x, y, width, height, name);
+
+        const outgoingMessage: OutgoingMessage = {
+            type: OutgoingSupportedMessage.RECTANGLE,
+            payload: {
+                canvasId,
+                userId,
+                x,
+                y,
+                width,
+                height,
                 name
             }
         }

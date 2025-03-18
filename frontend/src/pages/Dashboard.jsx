@@ -118,6 +118,22 @@ const Dashboard = () => {
             context.lineTo(payload.endX, payload.endY);
             context.stroke();
           }
+        } else if (type === "RECTANGLE") {
+          if (context) {
+            context.beginPath();
+            context.lineWidth = 2;
+            context.lineCap = "round";
+            context.strokeStyle = "white";
+            // context.moveTo(payload.startX, payload.startY);
+            // context.lineTo(payload.endX, payload.endY);
+            // context.stroke();
+            context.strokeRect(
+              payload.x,
+              payload.y,
+              payload.width,
+              payload.height
+            );
+          }
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -190,6 +206,25 @@ const Dashboard = () => {
     );
   };
 
+  const sendRectangleMessage = (x, y, width, height) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "RECTANGLE",
+        payload: {
+          canvasId,
+          userId,
+          x,
+          y,
+          width,
+          height,
+          name: username,
+        },
+      })
+    );
+  };
+
   const handleToolChange = (toolId) => {
     setCurrentTool(toolId);
   };
@@ -243,6 +278,22 @@ const Dashboard = () => {
         context.moveTo(startPoint.x, startPoint.y);
         context.lineTo(x, y);
         context.stroke();
+      } else if (currentTool === "rectangle" && isDrawing && startPoint) {
+        restoreCanvasState();
+
+        context.beginPath();
+        context.lineWidth = 2;
+        context.lineCap = "round";
+        context.strokeStyle = "#ACD3ED";
+        // context.moveTo(startPoint.x, startPoint.y);
+        // context.lineTo(x, y);
+        context.strokeRect(
+          startPoint.x,
+          startPoint.y,
+          x - startPoint.x,
+          y - startPoint.y
+        );
+        // context.stroke();
       }
 
       prevXRef.current = x;
@@ -257,7 +308,7 @@ const Dashboard = () => {
     prevXRef.current = x;
     prevYRef.current = y;
 
-    if (currentTool === "line") {
+    if (currentTool === "line" || currentTool == "rectangle") {
       setIsDrawing(true);
       setStartPoint({ x, y });
       saveCanvasState();
@@ -280,6 +331,32 @@ const Dashboard = () => {
       context.stroke();
 
       sendLineMessage(startPoint.x, startPoint.y, x, y);
+
+      setIsDrawing(false);
+      setStartPoint(null);
+    } else if (currentTool === "rectangle" && isDrawing && startPoint) {
+      const context = canvasRef.current.getContext("2d");
+
+      context.beginPath();
+      context.lineWidth = 2;
+      context.lineCap = "round";
+      context.strokeStyle = "#ACD3ED";
+      // context.moveTo(startPoint.x, startPoint.y);
+      // context.lineTo(x, y);
+      // context.stroke();
+      context.strokeRect(
+        startPoint.x,
+        startPoint.y,
+        x - startPoint.x,
+        y - startPoint.y
+      );
+
+      sendRectangleMessage(
+        startPoint.x,
+        startPoint.y,
+        x - startPoint.x,
+        y - startPoint.y
+      );
 
       setIsDrawing(false);
       setStartPoint(null);
@@ -345,7 +422,6 @@ const Dashboard = () => {
           >
             <BsPerson size={16} />
           </button>
-
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-[#1e1e1e] rounded-md shadow-lg py-1 z-20">
               <div className="px-3 py-2 text-xs border-b border-[#2a2a2a]">
@@ -374,6 +450,9 @@ const Dashboard = () => {
         onMouseUp={handleMouseUp}
         onMouseLeave={() => {
           if (currentTool === "line" && isDrawing) {
+            restoreCanvasState();
+            setIsDrawing(false);
+          } else if (currentTool === "rectangle" && isDrawing) {
             restoreCanvasState();
             setIsDrawing(false);
           }

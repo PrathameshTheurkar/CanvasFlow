@@ -1,8 +1,10 @@
-import { Cursor, Store } from "./Store";
+import { Cursor, Line, Rectangle, Store } from "./Store";
 
 interface Canvas {
     canvasId: string;
-    cursor: Cursor[];
+    cursor?: Cursor[];
+    line?: Line[];
+    rectangle?: Rectangle[]
 }
 
 export class InMemoryStore implements Store {
@@ -15,7 +17,9 @@ export class InMemoryStore implements Store {
     initCanvas(canvasId: string) {
         this.canvas.set(canvasId, {
             canvasId,
-            cursor: []
+            cursor: [],
+            line: [],
+            rectangle: []
         })
     }
 
@@ -25,6 +29,10 @@ export class InMemoryStore implements Store {
         }
 
         const canvas = this.canvas.get(canvasId);
+
+        if(!canvas?.cursor) {
+            return;
+        }
 
         canvas?.cursor.push({
             id: `${userId}-${Date.now()}`,
@@ -56,9 +64,47 @@ export class InMemoryStore implements Store {
 
         const filteredCursors = cursors?.filter((cursor) => (!(cursor.x == x) ||  !(cursor.y == y)));
 
-        this.canvas.set(canvasId, {
+        this.canvas.set(canvasId, {            
             canvasId,
             cursor: filteredCursors || []
+        })
+    }
+
+    addLine(canvasId: string, userId: string, startX: number, startY: number, endX: number, endY: number, name: string) {
+        if(!this.canvas.get(canvasId)) {
+            this.initCanvas(canvasId);
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.line?.push({
+            id: `${userId}-${Date.now()}`,
+            canvasId,
+            userId,
+            startX,
+            startY,
+            endX,
+            endY,
+            name
+        })
+    }
+
+    addRectangle(canvasId: string, userId: string, x: number, y: number, width: number, height: number, name: string) {
+        if(!this.canvas.get(canvasId)) {
+            this.initCanvas(canvasId);
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.rectangle?.push({
+            id: `${userId}-${Date.now()}`,
+            canvasId,
+            userId,
+            x,
+            y,
+            width,
+            height,
+            name
         })
     }
 
