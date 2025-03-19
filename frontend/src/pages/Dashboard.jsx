@@ -59,6 +59,7 @@ const Dashboard = () => {
       case "rectangle":
       case "diamond":
       case "circle":
+        return "cursor-crosshair";
       case "arrow":
       case "line":
         return "cursor-crosshair";
@@ -133,6 +134,15 @@ const Dashboard = () => {
               payload.width,
               payload.height
             );
+          }
+        } else if (type === "CIRCLE") {
+          if (context) {
+            context.beginPath();
+            context.lineWidth = 2;
+            context.lineCap = "round";
+            context.strokeStyle = "white";
+            context.arc(payload.x, payload.y, payload.radius, 0, 2 * Math.PI);
+            context.stroke();
           }
         }
       } catch (error) {
@@ -225,6 +235,24 @@ const Dashboard = () => {
     );
   };
 
+  const sendCircleMessage = (x, y, radius) => {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+    socket.send(
+      JSON.stringify({
+        type: "CIRCLE",
+        payload: {
+          canvasId,
+          userId,
+          x,
+          y,
+          radius,
+          name: username,
+        },
+      })
+    );
+  };
+
   const handleToolChange = (toolId) => {
     setCurrentTool(toolId);
   };
@@ -294,6 +322,21 @@ const Dashboard = () => {
           y - startPoint.y
         );
         // context.stroke();
+      } else if (currentTool === "circle" && isDrawing && startPoint) {
+        restoreCanvasState();
+
+        context.beginPath();
+        context.lineWidth = 2;
+        context.lineCap = "round";
+        context.strokeStyle = "#ACD3ED";
+        context.arc(
+          startPoint.x,
+          startPoint.y,
+          Math.sqrt((startPoint.x - x) ** 2 + (startPoint.y - y) ** 2),
+          0,
+          2 * Math.PI
+        );
+        context.stroke();
       }
 
       prevXRef.current = x;
@@ -308,7 +351,11 @@ const Dashboard = () => {
     prevXRef.current = x;
     prevYRef.current = y;
 
-    if (currentTool === "line" || currentTool == "rectangle") {
+    if (
+      currentTool === "line" ||
+      currentTool == "rectangle" ||
+      currentTool == "circle"
+    ) {
       setIsDrawing(true);
       setStartPoint({ x, y });
       saveCanvasState();
@@ -356,6 +403,39 @@ const Dashboard = () => {
         startPoint.y,
         x - startPoint.x,
         y - startPoint.y
+      );
+
+      setIsDrawing(false);
+      setStartPoint(null);
+    } else if (currentTool === "circle" && isDrawing && startPoint) {
+      const context = canvasRef.current.getContext("2d");
+
+      context.beginPath();
+      context.lineWidth = 2;
+      context.lineCap = "round";
+      context.strokeStyle = "#ACD3ED";
+      // context.moveTo(startPoint.x, startPoint.y);
+      // context.lineTo(x, y);
+      // context.stroke();
+      // context.strokeRect(
+      //   startPoint.x,
+      //   startPoint.y,
+      //   x - startPoint.x,
+      //   y - startPoint.y
+      // );
+      context.arc(
+        startPoint.x,
+        startPoint.y,
+        Math.sqrt((startPoint.x - x) ** 2 + (startPoint.y - y) ** 2),
+        0,
+        2 * Math.PI
+      );
+      context.stroke();
+
+      sendCircleMessage(
+        startPoint.x,
+        startPoint.y,
+        Math.sqrt((startPoint.x - x) ** 2 + (startPoint.y - y) ** 2)
       );
 
       setIsDrawing(false);
@@ -453,6 +533,9 @@ const Dashboard = () => {
             restoreCanvasState();
             setIsDrawing(false);
           } else if (currentTool === "rectangle" && isDrawing) {
+            restoreCanvasState();
+            setIsDrawing(false);
+          } else if (currentTool === "circle" && isDrawing) {
             restoreCanvasState();
             setIsDrawing(false);
           }

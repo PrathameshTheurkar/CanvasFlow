@@ -136,5 +136,23 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
         }
 
         userManager.broadcast(canvasId, userId, outgoingMessage);
+    } else if(message.type == SupportedMessage.CIRCLE) {
+        const {canvasId, userId, x, y, radius, name} = message.payload;
+
+        store.addCircle(canvasId, userId, x, y, radius, name);
+
+        const outgoingMessage: OutgoingMessage = {
+            type: OutgoingSupportedMessage.CIRCLE,
+            payload: {
+                canvasId,
+                userId,
+                x,
+                y,
+                radius,
+                name
+            }
+        }
+
+        userManager.broadcast(canvasId, userId, outgoingMessage);
     }
 }

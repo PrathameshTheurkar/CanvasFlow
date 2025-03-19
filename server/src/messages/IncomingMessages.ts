@@ -5,7 +5,8 @@ export enum SupportedMessage  {
     DRAW = 'DRAW',
     ERASE = 'ERASE',
     LINE = 'LINE',
-    RECTANGLE = 'RECTANGLE'
+    RECTANGLE = 'RECTANGLE',
+    CIRCLE = 'CIRCLE'
 }
 
 export type IncomingMessages = {
@@ -23,6 +24,9 @@ export type IncomingMessages = {
 } | {
     type: SupportedMessage.RECTANGLE,
     payload: RectangleMessageType
+} | {
+    type: SupportedMessage.CIRCLE,
+    payload: CircleMessageType
 }
 
 export const JoinMessage = z.object({
@@ -78,3 +82,15 @@ export const RectangleMessage = z.object({
 })
 
 export type RectangleMessageType = z.infer<typeof RectangleMessage>;
+
+
+export const CircleMessage = z.object({
+    canvasId: z.string(),
+    userId: z.string(),
+    x: z.number(),
+    y: z.number(),
+    radius: z.number(),
+    name: z.string()
+})
+
+export type CircleMessageType = z.infer<typeof CircleMessage>;

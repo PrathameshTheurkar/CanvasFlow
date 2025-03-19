@@ -3,7 +3,8 @@ export enum SupportedMessage {
     DRAW = 'DRAW',
     ERASE = 'ERASE',
     LINE = 'LINE',
-    RECTANGLE = 'RECTANGLE'
+    RECTANGLE = 'RECTANGLE',
+    CIRCLE = "CIRCLE"
 }
 
 type MessagePayload = {
@@ -43,6 +44,15 @@ type RectangleMessagePayload = {
     name: string;
 }
 
+type CircleMessagePayload = {
+    canvasId: string;
+    userId: string;
+    x: number;
+    y: number;
+    radius: number;
+    name: string;
+}
+
 export type OutgoingMessage = {
     type: SupportedMessage.DRAW,
     payload: MessagePayload
@@ -58,5 +68,8 @@ export type OutgoingMessage = {
 } | {
     type: SupportedMessage.RECTANGLE,
     payload: RectangleMessagePayload
+} | {
+    type: SupportedMessage.CIRCLE,
+    payload: CircleMessagePayload
 }
 

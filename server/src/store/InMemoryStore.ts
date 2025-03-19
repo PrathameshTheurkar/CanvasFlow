@@ -1,10 +1,11 @@
-import { Cursor, Line, Rectangle, Store } from "./Store";
+import { Circle, Cursor, Line, Rectangle, Store } from "./Store";
 
 interface Canvas {
     canvasId: string;
     cursor?: Cursor[];
     line?: Line[];
-    rectangle?: Rectangle[]
+    rectangle?: Rectangle[],
+    circle?: Circle[]
 }
 
 export class InMemoryStore implements Store {
@@ -19,7 +20,8 @@ export class InMemoryStore implements Store {
             canvasId,
             cursor: [],
             line: [],
-            rectangle: []
+            rectangle: [],
+            circle: []
         })
     }
 
@@ -104,6 +106,24 @@ export class InMemoryStore implements Store {
             y,
             width,
             height,
+            name
+        })
+    }
+
+    addCircle(canvasId: string, userId: string, x: number, y: number, radius: number, name: string) {
+        if(!this.canvas.get(canvasId)) {
+            this.initCanvas(canvasId);
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.circle?.push({
+            id: `${userId}-${Date.now()}`,
+            canvasId,
+            userId,
+            x,
+            y,
+            radius,
             name
         })
     }

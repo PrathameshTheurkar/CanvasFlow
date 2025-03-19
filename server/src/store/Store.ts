@@ -31,6 +31,16 @@ export interface Rectangle {
     name: string
 }
 
+export interface Circle {
+    id: string;
+    canvasId: string;
+    userId: string;
+    x: number;
+    y: number;
+    radius: number;
+    name: string;
+}
+
 export abstract class Store {
     constructor() {
 
