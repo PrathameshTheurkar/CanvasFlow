@@ -12,17 +12,16 @@ import {
   BsTypeH1,
   BsImage,
   BsEraser,
-  BsArrowCounterclockwise,
   BsList,
-  BsPerson,
-  BsShare,
 } from "react-icons/bs";
+import ProfileMenu from "../components/ProfileMenu";
+import ShareButton from "../components/ShareButton";
+import Toolbar from "../components/Toolbar";
 
 const Dashboard = () => {
   const [currentTool, setCurrentTool] = useState("pencil");
   const [socket, setSocket] = useState(null);
   const [userId] = useState(Math.floor(Math.random() * 1000).toString());
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { username, canvasId } = useContext(Context);
   const [startPoint, setStartPoint] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -257,10 +256,6 @@ const Dashboard = () => {
     setCurrentTool(toolId);
   };
 
-  const toggleProfileMenu = () => {
-    setShowProfileMenu(!showProfileMenu);
-  };
-
   const saveCanvasState = () => {
     if (canvasRef.current) {
       setLastCanvas(
@@ -454,70 +449,15 @@ const Dashboard = () => {
         </button>
       </div>
 
-      <div className="fixed top-3 left-1/2 transform -translate-x-1/2 bg-[#1e1e1e] rounded-lg shadow-lg z-10">
-        <div className="flex items-center h-10 px-1">
-          {tools.map((tool) => {
-            const IconComponent = tool.icon;
-            return (
-              <button
-                key={tool.id}
-                className={`p-1.5 m-0.5 rounded-md transition-colors relative group ${
-                  currentTool === tool.id
-                    ? "bg-[#2a2a2a] text-white"
-                    : "hover:bg-[#2a2a2a] text-gray-400 hover:text-white"
-                }`}
-                onClick={() => handleToolChange(tool.id)}
-                aria-label={tool.tooltip}
-              >
-                <IconComponent size={16} />
-                <span className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-xs py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {tool.tooltip}
-                </span>
-              </button>
-            );
-          })}
-          <div className="h-5 mx-1 w-px bg-[#2a2a2a]"></div>
-          <button
-            className="p-1.5 m-0.5 rounded-md hover:bg-[#2a2a2a] text-gray-400 hover:text-white transition-colors relative group"
-            aria-label="Undo"
-          >
-            <BsArrowCounterclockwise size={16} />
-            <span className="absolute -bottom-7 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-xs py-0.5 px-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-              Undo
-            </span>
-          </button>
-        </div>
-      </div>
+      <Toolbar
+        tools={tools}
+        currentTool={currentTool}
+        handleToolChange={handleToolChange}
+      />
 
       <div className="fixed right-3 top-3 flex items-center space-x-2 z-10">
-        <button className="p-1.5 rounded-md bg-blue-600 hover:bg-blue-700 transition-colors flex items-center">
-          <BsShare className="mr-1" size={14} />
-          <span className="text-xs">Share</span>
-        </button>
-
-        <div className="relative">
-          <button
-            className="flex items-center p-1.5 rounded-md bg-[#1e1e1e] hover:bg-[#2a2a2a] transition-colors"
-            onClick={toggleProfileMenu}
-          >
-            <BsPerson size={16} />
-          </button>
-          {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#1e1e1e] rounded-md shadow-lg py-1 z-20">
-              <div className="px-3 py-2 text-xs border-b border-[#2a2a2a]">
-                Signed in as{" "}
-                <span className="font-medium">{username || "User"}</span>
-              </div>
-              <div className="px-3 py-2 text-xs">
-                Canvas ID:{" "}
-                <span className="font-medium">{canvasId || "Default"}</span>
-              </div>
-              <button className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-[#2a2a2a]">
-                Sign out
-              </button>
-            </div>
-          )}
-        </div>
+        <ShareButton />
+        <ProfileMenu />
       </div>
 
       <canvas
