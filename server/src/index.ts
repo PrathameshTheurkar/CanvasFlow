@@ -57,7 +57,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
             payload: {
                 canvasId,
                 userId,
-                name
+                name,
             }
         }
 
@@ -66,7 +66,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
     } else if(message.type == SupportedMessage.DRAW) {
         const {canvasId, userId, prevX, prevY, x, y, name} = message.payload;
 
-        store.addCursor(canvasId, userId, prevX, prevY, x, y, name);
+        store.addStroke(canvasId, userId, prevX, prevY, x, y, name);
 
         const outgoingMessage: OutgoingMessage = {
             type: OutgoingSupportedMessage.DRAW,
@@ -85,7 +85,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
     } else if(message.type == SupportedMessage.ERASE) {
         const {canvasId, userId, x, y} = message.payload;
 
-        store.removeCursor(canvasId, userId, x, y);
+        store.removeStroke(canvasId, userId, x, y);
 
         const outgoingMessage: OutgoingMessage = {
             type: OutgoingSupportedMessage.ERASE,
@@ -149,6 +149,23 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
                 x,
                 y,
                 radius,
+                name
+            }
+        }
+
+        userManager.broadcast(canvasId, userId, outgoingMessage);
+    } else if(message.type == SupportedMessage.CURSOR) {
+        const {canvasId, userId, x, y, name} = message.payload;
+
+        store.addCursor(canvasId, userId, x, y, name);
+
+        const outgoingMessage: OutgoingMessage = {
+            type: OutgoingSupportedMessage.CURSOR,
+            payload: {
+                canvasId,
+                userId,
+                x,
+                y,
                 name
             }
         }

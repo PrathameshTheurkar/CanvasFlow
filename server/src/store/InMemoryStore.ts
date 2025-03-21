@@ -1,11 +1,12 @@
-import { Circle, Cursor, Line, Rectangle, Store } from "./Store";
+import { Circle, Cursor, Line, Rectangle, Store, Stroke } from "./Store";
 
 interface Canvas {
     canvasId: string;
-    cursor?: Cursor[];
+    stroke?: Stroke[];
     line?: Line[];
     rectangle?: Rectangle[],
-    circle?: Circle[]
+    circle?: Circle[],
+    cursor?: Cursor[]
 }
 
 export class InMemoryStore implements Store {
@@ -18,25 +19,26 @@ export class InMemoryStore implements Store {
     initCanvas(canvasId: string) {
         this.canvas.set(canvasId, {
             canvasId,
-            cursor: [],
+            stroke: [],
             line: [],
             rectangle: [],
-            circle: []
+            circle: [],
+            cursor: []
         })
     }
 
-    addCursor(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
+    addStroke(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
         if(!this.canvas.get(canvasId)) {
             this.initCanvas(canvasId);
         }
 
         const canvas = this.canvas.get(canvasId);
 
-        if(!canvas?.cursor) {
+        if(!canvas?.stroke) {
             return;
         }
 
-        canvas?.cursor.push({
+        canvas?.stroke.push({
             id: `${userId}-${Date.now()}`,
             userId,
             name,
@@ -47,28 +49,28 @@ export class InMemoryStore implements Store {
         })
     }
 
-    getCursors(canvasId: string) {
+    getStrokes(canvasId: string) {
         const canvas = this.canvas.get(canvasId);
 
         if(!canvas) {
             return [];
         }
 
-        return canvas.cursor;
+        return canvas.stroke;
     }
 
-    removeCursor(canvasId: string, userId: string, x: number, y: number) {
+    removeStroke(canvasId: string, userId: string, x: number, y: number) {
         if(!this.canvas.get(canvasId)) {
             return;
         }
 
-        const cursors = this.canvas.get(canvasId)?.cursor;
+        const strokes = this.canvas.get(canvasId)?.stroke;
 
-        const filteredCursors = cursors?.filter((cursor) => (!(cursor.x == x) ||  !(cursor.y == y)));
+        const filteredStrokes = strokes?.filter((stroke) => (!(stroke.x == x) ||  !(stroke.y == y)));
 
         this.canvas.set(canvasId, {            
             canvasId,
-            cursor: filteredCursors || []
+            stroke: filteredStrokes || []
         })
     }
 
@@ -124,6 +126,23 @@ export class InMemoryStore implements Store {
             x,
             y,
             radius,
+            name
+        })
+    }
+
+    addCursor(canvasId: string, userId: string, x: number, y: number, name: string) {
+        if(!this.canvas.get(canvasId)) {
+            this.initCanvas(canvasId);
+        }
+
+        const canvas = this.canvas.get(canvasId);
+
+        canvas?.cursor?.push({
+            id: `${userId}-${Date.now()}`,
+            canvasId,
+            userId,
+            x,
+            y,
             name
         })
     }

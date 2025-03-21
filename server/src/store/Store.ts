@@ -1,5 +1,5 @@
 
-export interface Cursor {
+export interface Stroke {
     id: string;
     userId: string;
     name: string;
@@ -41,6 +41,15 @@ export interface Circle {
     name: string;
 }
 
+export interface Cursor {
+    id: string;
+    canvasId: string;
+    userId: string;
+    x: number;
+    y: number;
+    name: string;
+}
+
 export abstract class Store {
     constructor() {
 
@@ -50,11 +59,11 @@ export abstract class Store {
 
     }
 
-    addCursor(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
+    addStroke(canvasId: string, userId: string, prevX: number, prevY: number, x: number, y: number, name: string) {
 
     }
 
-    getCursors(canvasId: string) {
+    getStrokes(canvasId: string) {
         
     }
 }

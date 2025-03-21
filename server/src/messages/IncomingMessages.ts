@@ -6,7 +6,8 @@ export enum SupportedMessage  {
     ERASE = 'ERASE',
     LINE = 'LINE',
     RECTANGLE = 'RECTANGLE',
-    CIRCLE = 'CIRCLE'
+    CIRCLE = 'CIRCLE',
+    CURSOR = 'CURSOR' 
 }
 
 export type IncomingMessages = {
@@ -27,6 +28,9 @@ export type IncomingMessages = {
 } | {
     type: SupportedMessage.CIRCLE,
     payload: CircleMessageType
+} | {
+    type: SupportedMessage.CURSOR,
+    payload: CursorMessageType
 }
 
 export const JoinMessage = z.object({
@@ -94,3 +98,13 @@ export const CircleMessage = z.object({
 })
 
 export type CircleMessageType = z.infer<typeof CircleMessage>;
+
+export const CursorMessage = z.object({
+    canvasId: z.string(),
+    userId: z.string(),
+    x: z.number(),
+    y: z.number(),
+    name: z.string()
+})
+
+export type CursorMessageType = z.infer<typeof CursorMessage>;

@@ -1,7 +1,7 @@
 import { connection } from "websocket";
 import { OutgoingMessage } from "../messages/outgoingMessages";
 
-interface User {
+export interface User {
     id: string;
     name: string;
     conn: connection
@@ -38,7 +38,7 @@ export class UserManager {
             conn: socket
         })
         // console.log(`users: `, canvas?.users);
-
+        
         socket.on('close', (reasonCode, description) => {
             console.log((new Date()) + ' Peer ' + socket.remoteAddress + ' disconnected.');
             console.log(`UserId: ${userId} disconnected`);

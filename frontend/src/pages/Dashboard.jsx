@@ -17,6 +17,7 @@ import {
 import ProfileMenu from "../components/ProfileMenu";
 import ShareButton from "../components/ShareButton";
 import Toolbar from "../components/Toolbar";
+import { motion } from "framer-motion";
 
 const Dashboard = () => {
   const [currentTool, setCurrentTool] = useState("pencil");
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const [startPoint, setStartPoint] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [lastCanvas, setLastCanvas] = useState(null);
+  const [users, setUsers] = useState([]);
 
   const canvasRef = useRef();
   const prevXRef = useRef(null);
@@ -94,7 +96,15 @@ const Dashboard = () => {
     ws.onmessage = (message) => {
       try {
         const { payload, type } = JSON.parse(message.data);
-        if (type === "DRAW") {
+        if (type === "JOIN") {
+          const user = {
+            ...payload,
+            x: 0,
+            y: 0,
+          };
+          setUsers((users) => [...users, user]);
+          // setUsers(payload.users);
+        } else if (type === "DRAW") {
           if (context) {
             context.beginPath();
             context.lineWidth = 2;
@@ -143,6 +153,47 @@ const Dashboard = () => {
             context.arc(payload.x, payload.y, payload.radius, 0, 2 * Math.PI);
             context.stroke();
           }
+        } else if (type == "CURSOR") {
+          // const user = users.find((user) => {
+          //   if (user.userId == payload.userId) {
+          //     user.x = payload.x;
+          //     user.y = payload.y;
+          //   }
+          //   return user;
+          // });
+
+          // if (users.length != 0) {
+          //   setUsers((users) =>
+          //     users.filter((user) => user.userId == payload.userId)
+          //   );
+          // }
+          // setUsers((users) => [...users, user]);
+          // if (users.length != 0) {
+          console.log("inside");
+          // const updatedUsers = users.map((user) => {
+          //   if (user.userId == payload.userId) {
+          //     user.x = payload.x;
+          //     user.y = payload.y;
+          //   }
+
+          //   return user;
+          // });
+          // console.log()
+          // setUsers(updatedUsers);
+          setUsers((prevUsers) =>
+            prevUsers.map((user) => {
+              if (user.userId == payload.userId) {
+                return {
+                  ...user,
+                  x: payload.x,
+                  y: payload.y,
+                };
+              }
+
+              return user;
+            })
+          );
+          // }
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -161,10 +212,11 @@ const Dashboard = () => {
       ws.close();
       setSocket(null);
     };
-  }, [username, canvasId, userId]);
+  }, []);
 
   const sendDrawMessage = (prevX, prevY, x, y) => {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
+    console.log("asafasdf");
     socket.send(
       JSON.stringify({
         type: "DRAW",
@@ -441,8 +493,44 @@ const Dashboard = () => {
     prevYRef.current = null;
   };
 
+  const handleCursorMove = (e) => {
+    socket.send(
+      JSON.stringify({
+        type: "CURSOR",
+        payload: {
+          canvasId,
+          userId,
+          x: e.nativeEvent.offsetX,
+          y: e.nativeEvent.offsetY,
+        },
+      })
+    );
+  };
+
+  useEffect(() => {
+    console.log("users: ", users);
+  }, [users]);
+
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-[#121212] text-gray-300">
+    <div
+      className="relative h-screen w-screen overflow-hidden bg-[#121212] text-gray-300"
+      onMouseMove={handleCursorMove}
+    >
+      {users?.map((user) => {
+        if (!user) return;
+        if (user.userId == userId) return;
+
+        return (
+          <motion.div
+            id={`${user.userId}`}
+            className="z-50"
+            animate={{ x: user.x, y: user.y }}
+          >
+            <BsCursor />
+            {user.name}
+          </motion.div>
+        );
+      })}
       <div className="fixed left-3 top-3 z-10">
         <button className="p-1.5 rounded-md bg-[#1e1e1e] hover:bg-[#2a2a2a] transition-colors text-gray-300">
           <BsList size={18} />

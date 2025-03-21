@@ -4,7 +4,8 @@ export enum SupportedMessage {
     ERASE = 'ERASE',
     LINE = 'LINE',
     RECTANGLE = 'RECTANGLE',
-    CIRCLE = "CIRCLE"
+    CIRCLE = "CIRCLE",
+    CURSOR = 'CURSOR'
 }
 
 type MessagePayload = {
@@ -51,6 +52,20 @@ type CircleMessagePayload = {
     y: number;
     radius: number;
     name: string;
+} 
+
+type CursorMessagePayload = {
+    canvasId: string,
+    userId: string,
+    x: number,
+    y: number,
+    name: string
+}
+
+type JoinMessagePayload = {
+    canvasId: string,
+    userId: string,
+    name: string,
 }
 
 export type OutgoingMessage = {
@@ -58,7 +73,7 @@ export type OutgoingMessage = {
     payload: MessagePayload
 } | {
     type: SupportedMessage.JOIN,
-    payload: Partial<MessagePayload>
+    payload: JoinMessagePayload
 } | {
     type: SupportedMessage.ERASE,
     payload: UpdateMessageUpload
@@ -71,5 +86,8 @@ export type OutgoingMessage = {
 } | {
     type: SupportedMessage.CIRCLE,
     payload: CircleMessagePayload
+} | {
+    type: SupportedMessage.CURSOR,
+    payload: CursorMessagePayload
 }
 
