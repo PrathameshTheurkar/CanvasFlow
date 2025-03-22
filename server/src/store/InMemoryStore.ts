@@ -137,14 +137,35 @@ export class InMemoryStore implements Store {
 
         const canvas = this.canvas.get(canvasId);
 
-        canvas?.cursor?.push({
-            id: `${userId}-${Date.now()}`,
-            canvasId,
-            userId,
-            x,
-            y,
-            name
+        
+        if(!canvas?.cursor?.find((cur) => cur.userId == userId)){
+            canvas?.cursor?.push({
+                id: `${userId}-${Date.now()}`,
+                canvasId,
+                userId,
+                x,
+                y,
+                name
+            })
+
+            return canvas?.cursor || [];
+        }
+
+        const updatedCursors = canvas?.cursor?.map((cursor) => {
+            if(cursor.userId == userId) {
+                return {
+                    ...cursor,
+                    x: x,
+                    y: y
+                }
+            }
+
+            return cursor;
         })
+
+        canvas.cursor = updatedCursors;
+
+        return canvas?.cursor || [];
     }
 
 }

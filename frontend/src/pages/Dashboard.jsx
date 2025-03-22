@@ -97,13 +97,13 @@ const Dashboard = () => {
       try {
         const { payload, type } = JSON.parse(message.data);
         if (type === "JOIN") {
-          const user = {
-            ...payload,
-            x: 0,
-            y: 0,
-          };
-          setUsers((users) => [...users, user]);
-          // setUsers(payload.users);
+          // const user = {
+          //   ...payload,
+          //   x: 0,
+          //   y: 0,
+          // };
+          // setUsers((users) => [...users, user]);
+          setUsers(payload.users);
         } else if (type === "DRAW") {
           if (context) {
             context.beginPath();
@@ -194,6 +194,14 @@ const Dashboard = () => {
             })
           );
           // }
+        } else if (type == "LEAVE") {
+          setUsers((prevUsers) =>
+            prevUsers.map((user) => {
+              if (user.userId != payload.userId) {
+                return user;
+              }
+            })
+          );
         }
       } catch (error) {
         console.error("Error parsing WebSocket message:", error);
@@ -523,7 +531,7 @@ const Dashboard = () => {
         return (
           <motion.div
             id={`${user.userId}`}
-            className="z-50"
+            className="z-50 inline-block"
             animate={{ x: user.x, y: user.y }}
           >
             <BsCursor />

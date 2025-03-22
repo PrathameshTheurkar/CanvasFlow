@@ -50,7 +50,9 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
     if(message.type == SupportedMessage.JOIN) {
         const {canvasId, userId, name} = message.payload;
 
-        userManager.addUser(canvasId, userId, name, ws);
+        const users = userManager.addUser(canvasId, userId, name, ws);
+
+        console.log('Users: ', users);
 
         const outgoingMessage: OutgoingMessage  = {
             type: OutgoingSupportedMessage.JOIN,
@@ -58,6 +60,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
                 canvasId,
                 userId,
                 name,
+                users
             }
         }
 
@@ -166,7 +169,7 @@ const requestHandler = (ws: connection, message: IncomingMessages) => {
                 userId,
                 x,
                 y,
-                name
+                name,
             }
         }
 

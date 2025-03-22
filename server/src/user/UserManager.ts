@@ -1,5 +1,5 @@
 import { connection } from "websocket";
-import { OutgoingMessage } from "../messages/outgoingMessages";
+import { OutgoingMessage, SupportedMessage } from "../messages/outgoingMessages";
 
 export interface User {
     id: string;
@@ -37,13 +37,31 @@ export class UserManager {
             name,
             conn: socket
         })
+
+        const joinedUsers = canvas?.users.map((user) => {
+            return  {
+                userId: user.id,
+                name: user.name
+            }
+        })
         // console.log(`users: `, canvas?.users);
         
         socket.on('close', (reasonCode, description) => {
             console.log((new Date()) + ' Peer ' + socket.remoteAddress + ' disconnected.');
             console.log(`UserId: ${userId} disconnected`);
             this.removeUser(canvasId, userId);
+            const outgoingMessage: OutgoingMessage = {
+                type: SupportedMessage.LEAVE,
+                payload: {
+                    canvasId,
+                    userId,
+                    name
+                }
+            }
+            this.broadcast(canvasId, userId, outgoingMessage);
         });
+
+        return joinedUsers || [];
     }
 
     removeUser(canvasId: string, userId: string) {
@@ -53,14 +71,12 @@ export class UserManager {
 
         const canvas = this.canvas.get(canvasId);
 
-        const users = canvas?.users.filter(({id}) => id !== userId);
+        const users = canvas?.users.filter(({id}) => id != userId);
 
-        if(users?.length != 0) {
             this.canvas.set(canvasId, {
                 canvasId,
                 users: users || []
             })
-        }
     }
 
     getUser(canvasId: string, userId: string) {
@@ -88,7 +104,7 @@ export class UserManager {
         const canvas = this.canvas.get(canvasId);
 
         canvas?.users.forEach(({conn, id}) => {
-            if(id == userId) {
+            if(id == userId && message.type != 'JOIN') {
                 return;
             }
             conn.sendUTF(JSON.stringify(message));

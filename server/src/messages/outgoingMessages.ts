@@ -5,7 +5,8 @@ export enum SupportedMessage {
     LINE = 'LINE',
     RECTANGLE = 'RECTANGLE',
     CIRCLE = "CIRCLE",
-    CURSOR = 'CURSOR'
+    CURSOR = 'CURSOR',
+    LEAVE = 'LEAVE'
 }
 
 type MessagePayload = {
@@ -59,6 +60,11 @@ type CursorMessagePayload = {
     userId: string,
     x: number,
     y: number,
+    name: string,
+}
+
+type User = {
+    userId: string,
     name: string
 }
 
@@ -66,6 +72,13 @@ type JoinMessagePayload = {
     canvasId: string,
     userId: string,
     name: string,
+    users: User[]
+}
+
+type LeaveMessagePayload = {
+    canvasId: string,
+    userId: string,
+    name: string
 }
 
 export type OutgoingMessage = {
@@ -89,5 +102,8 @@ export type OutgoingMessage = {
 } | {
     type: SupportedMessage.CURSOR,
     payload: CursorMessagePayload
+} | {
+    type: SupportedMessage.LEAVE,
+    payload: LeaveMessagePayload
 }
 
