@@ -49,7 +49,6 @@ export class UserManager {
         socket.on('close', (reasonCode, description) => {
             console.log((new Date()) + ' Peer ' + socket.remoteAddress + ' disconnected.');
             console.log(`UserId: ${userId} disconnected`);
-            this.removeUser(canvasId, userId);
             const outgoingMessage: OutgoingMessage = {
                 type: SupportedMessage.LEAVE,
                 payload: {
@@ -59,6 +58,7 @@ export class UserManager {
                 }
             }
             this.broadcast(canvasId, userId, outgoingMessage);
+            this.removeUser(canvasId, userId);            
         });
 
         return joinedUsers || [];

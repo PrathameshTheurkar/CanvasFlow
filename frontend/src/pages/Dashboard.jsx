@@ -154,32 +154,6 @@ const Dashboard = () => {
             context.stroke();
           }
         } else if (type == "CURSOR") {
-          // const user = users.find((user) => {
-          //   if (user.userId == payload.userId) {
-          //     user.x = payload.x;
-          //     user.y = payload.y;
-          //   }
-          //   return user;
-          // });
-
-          // if (users.length != 0) {
-          //   setUsers((users) =>
-          //     users.filter((user) => user.userId == payload.userId)
-          //   );
-          // }
-          // setUsers((users) => [...users, user]);
-          // if (users.length != 0) {
-          console.log("inside");
-          // const updatedUsers = users.map((user) => {
-          //   if (user.userId == payload.userId) {
-          //     user.x = payload.x;
-          //     user.y = payload.y;
-          //   }
-
-          //   return user;
-          // });
-          // console.log()
-          // setUsers(updatedUsers);
           setUsers((prevUsers) =>
             prevUsers.map((user) => {
               if (user.userId == payload.userId) {
@@ -193,14 +167,9 @@ const Dashboard = () => {
               return user;
             })
           );
-          // }
         } else if (type == "LEAVE") {
           setUsers((prevUsers) =>
-            prevUsers.map((user) => {
-              if (user.userId != payload.userId) {
-                return user;
-              }
-            })
+            prevUsers.filter((user) => user.userId != payload.userId)
           );
         }
       } catch (error) {
