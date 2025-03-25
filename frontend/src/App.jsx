@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import JoinCanvas from "./pages/JoinCanvas";
 import ContextProvider from "./context/ContextProvider";
 import Temp from "./Temp";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
             <Route path={"/"} element={<JoinCanvas />} />
             <Route path={"/dashboard"} element={<Dashboard />} />
             <Route path={"/temp"} element={<Temp />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </ContextProvider>
